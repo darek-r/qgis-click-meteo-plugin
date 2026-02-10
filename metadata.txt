@@ -1,7 +1,7 @@
 [general]
 name=Click Meteo
 description=This plugin shows current air temperature.
-version=0.1
+version=0.2
 qgisMinimumVersion=3.0
 author=Dariusz Radwan
 email=radwan.dariusz@gmail.com
