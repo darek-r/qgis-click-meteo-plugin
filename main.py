@@ -29,7 +29,7 @@ import inspect
 import urllib, json
 
 from PyQt5.QtWidgets import QAction, QLabel
-from PyQt5.QtGui import QIcon, 
+from PyQt5.QtGui import QIcon 
 
 from qgis.gui import QgsMapTool
 
@@ -79,18 +79,24 @@ class cmTool(QgsMapTool):
         self.canvas = iface.mapCanvas()
 
     def canvasReleaseEvent(self, e):
+        # Obtaining coordinates of the point clicked 
         point = self.canvas.getCoordinateTransform().toMapCoordinates(
             e.pos().x(), e.pos().y()
         )
         pt = pointToWGS84(point)
 
         # Obtaining data from open-meteo.com API
-        url = f'http://api.open-meteo.com/v1/forecast?latitude={round(pt.y(),2)}&longitude={round(pt.x(),2)}&current=temperature_2m'
-        response = urllib.request.urlopen(url)
-        data = json.loads(response.read())
+        url = f'http://api.open-meteo.com/v1/forecast?latitude={pt.y():.2f}&longitude={pt.x():.2f}&current=temperature_2m'
+
+        try:
+            response = urllib.request.urlopen(url)
+            data = json.loads(response.read())
+        except (urllib.error.URLError) as e:
+            self.iface.messageBar().pushWarning('Error', f'Failed to fetch data. Internet connection may be unavailable or API endpoint may be down.')
+            return
 
         # Push message bar with results
-        self.iface.messageBar().pushSuccess('Success',f'Temperature for latitude {round(pt.y(),2)},{point.x()} and longitude {round(pt.x(),2)},{point.y()} is {data['current']['temperature_2m']} {data['current_units']['temperature_2m']}')
+        self.iface.messageBar().pushSuccess('Success',f'Temperature for latitude {pt.y():.2f} and longitude {pt.x():.2f} is <b>{data["current"]["temperature_2m"]} {data["current_units"]["temperature_2m"]}</b>')
        
        
 
